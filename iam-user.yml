@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create IAM User etc.
+
+Resources:
+  ## IAM: Group
+  GroupAdministrators:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: Administrators
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  ## IAM: User
+  UserKuno: ### [Change Name]
+    Type: AWS::IAM::User
+    Properties:
+      UserName: kuno.link ### [Change Name]
+      LoginProfile:
+        Password: 123456=NuFuA
+        PasswordResetRequired: true
+      Groups:
+        - !Ref GroupAdministrators
+
+Outputs:
+  ## IAM: Group
+  GroupAdministrators:
+    Value: !GetAtt GroupAdministrators.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-GroupAdministrators
+
+  ## IAM: User
+  UserKuno: ### [Change Name]
+    Value: !GetAtt UserKuno.Arn ### [Change Name]
+    Export:
+      Name: !Sub ${AWS::StackName}-UserKuno ### [Change Name]

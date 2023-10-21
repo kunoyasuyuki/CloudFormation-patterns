@@ -1,1 +1,1 @@
-# CloudFormation-patterns
+# CloudFormation-patternsの記録用リポジトリ
