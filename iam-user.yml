@@ -14,7 +14,7 @@ Resources:
   UserKuno: ### [Change Name]
     Type: AWS::IAM::User
     Properties:
-      UserName: kuno.link ### [Change Name]
+      UserName: kuno ### [Change Name]
       LoginProfile:
         Password: 123456=NuFuA
         PasswordResetRequired: true
