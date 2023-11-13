@@ -16,12 +16,11 @@ Parameters:
   Environment:
     Description: Environment
     Type: String
-    Default: sandbox
+    Default: prod
     AllowedValues:
-      - sandbox
+      - prod
       - stg
       - dev
-      - sandbox
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -34,14 +33,14 @@ Metadata:
           - Environment
 
 Conditions:
-  isSandbox: !Equals [ !Ref Environment, sandbox ]
+  isProd: !Equals [ !Ref Environment, prod ]
 
 Resources:
   ## Route 53: Hosted Zone
   HostedZone:
     Type: AWS::Route53::HostedZone
     Properties:
-      Name: !If [ isSandbox, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
+      Name: !If [ isProd, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
       HostedZoneConfig:
         Comment: !Sub ${SystemName}-${Environment}-hostedzone
       HostedZoneTags:
@@ -50,7 +49,7 @@ Resources:
 
   ## Route 53: Record Set (CAA)
   RecordSetCaa:
-    Condition: isSandbox
+    Condition: isProd
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZone
@@ -68,7 +67,7 @@ Outputs:
       Name: !Sub ${AWS::StackName}-HostedZone
 
   HostedZoneDomainName:
-    Value: !If [ isSandbox, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
+    Value: !If [ isProd, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
     Export:
       Name: !Sub ${AWS::StackName}-HostedZoneDomainName
 
@@ -94,7 +93,7 @@ Outputs:
 
   ## Route 53: Record Set (CAA)
   RecordSetCaa:
-    Condition: isSandbox
+    Condition: isProd
     Value: !Ref RecordSetCaa
     Export:
       Name: !Sub ${AWS::StackName}-RecordSetCaa

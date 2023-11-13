@@ -18,12 +18,11 @@ Parameters:
   Environment:
     Description: Environment
     Type: String
-    Default: sandbox
+    Default: prod
     AllowedValues:
       - prod
       - stg
       - dev
-      - sandbox
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -36,16 +35,16 @@ Metadata:
           - Environment
 
 Conditions:
-  isSandbox: !Equals [ !Ref Environment, prod ]
+  isProd: !Equals [ !Ref Environment, prod ]
 
 Resources:
   ## Certificate Manager: Certificate
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !If [ isSandbox, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
+      DomainName: !If [ isProd, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
       SubjectAlternativeNames:
-        - !If [ isSandbox, !Sub "*.${DomainName}", !Sub "*.${Environment}.${DomainName}" ]
+        - !If [ isProd, !Sub "*.${DomainName}", !Sub "*.${Environment}.${DomainName}" ]
       Tags:
         - Key: Name
           Value: !Sub ${SystemName}-${Environment}-certificate-${AWS::Region}
@@ -59,11 +58,11 @@ Outputs:
       Name: !Sub ${AWS::StackName}-Certificate
 
   CertificateDomainName:
-    Value: !If [ isSandbox, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
+    Value: !If [ isProd, !Ref DomainName, !Sub "${Environment}.${DomainName}" ]
     Export:
       Name: !Sub ${AWS::StackName}-CertificateDomainName
 
   CertificateSubjectAlternativeName1:
-    Value: !If [ isSandbox, !Sub "*.${DomainName}", !Sub "*.${Environment}.${DomainName}" ]
+    Value: !If [ isProd, !Sub "*.${DomainName}", !Sub "*.${Environment}.${DomainName}" ]
     Export:
       Name: !Sub ${AWS::StackName}-CertificateSubjectAlternativeName1
