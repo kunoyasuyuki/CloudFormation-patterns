@@ -1,5 +1,5 @@
 ---
-### [Change System Name] kuno-test
+### [Change System Name] kunotest
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Create VPC, Internet Gateway, Subnet, Route Table, VPC Endpoint etc.
 
@@ -25,7 +25,7 @@ Parameters:
   SystemName:
     Description: System Name
     Type: String
-    Default: kuno-test ### [Change System Name]
+    Default: kunotest ### [Change System Name]
   Environment:
     Description: Environment
     Type: String

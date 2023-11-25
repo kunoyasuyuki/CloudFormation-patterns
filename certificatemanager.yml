@@ -1,5 +1,5 @@
 ---
-### [Change System Name] kuno-test
+### [Change System Name] kunotest
 ### [Change Domain Name] kunooru.biz
 ## CloudFront certificate needs to be created in the us-east-1 region.
 ## ELB certificate needs to be created in the ap-northeast-1 region.
@@ -10,7 +10,7 @@ Parameters:
   SystemName:
     Description: System name
     Type: String
-    Default: kuno-test ### [Change System Name]
+    Default: kunotest ### [Change System Name]
   DomainName:
     Description: Domain name
     Type: String

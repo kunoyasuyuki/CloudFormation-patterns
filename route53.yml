@@ -1,5 +1,5 @@
 ---
-### [Change System Name] kuno-test
+### [Change System Name] kunotest
 ### [Change Domain Name] kunooru.biz
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Create Route 53 Hosted Zone
@@ -8,7 +8,7 @@ Parameters:
   SystemName:
     Description: System Name
     Type: String
-    Default: kuno-test ### [Change System Name]
+    Default: kunotest ### [Change System Name]
   DomainName:
     Description: Domain name
     Type: String
