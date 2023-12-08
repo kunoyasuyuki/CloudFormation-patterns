@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for an Aurora RDS accessible from outside the VPC
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Tags and ResourceName
+        Parameters:
+          - PJPrefix
+      - Label:
+          default: VPC and PublicSubnets
+        Parameters:
+          - VPCCidrBlock
+          - PublicSubnet1aCidrBlock
+          - PublicSubnet1cCidrBlock
+      - Label:
+          default: RDS (Aurora)
+        Parameters:
+          - PreferredMaintenanceWindow
+          - WriterAndReaderDBInstanceClass
+
+Parameters:
+  PJPrefix:
+    Type: String
+
+  VPCCidrBlock:
+    Type: String
+    Default: '10.1.0.0/16'
+
+  PublicSubnet1aCidrBlock:
+    Type: String
+    Default: '10.1.0.0/24'
+
+  PublicSubnet1cCidrBlock:
+    Type: String
+    Default: '10.1.1.0/24'
+
+  WriterAndReaderDBInstanceClass:
+    Type: String
+    Default: 'db.t3.small'
+
+  PreferredMaintenanceWindow:
+    Type: String
+    Default: 'Fri:18:00-Fri:19:00'
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: 'Name'
+          Value: !Sub '${PJPrefix}-VPC'
+
+  PublicSubnet1a:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      MapPublicIpOnLaunch: true
+      CidrBlock: !Ref PublicSubnet1aCidrBlock
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: 'Name'
+          Value: !Sub '${PJPrefix}-PublicSubnet1a'
+
+  PublicSubnet1c:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      MapPublicIpOnLaunch: true
+      CidrBlock: !Ref PublicSubnet1cCidrBlock
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: 'Name'
+          Value: !Sub '${PJPrefix}-PublicSubnet1c'
+
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1aRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1a
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet1cRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1c
+      RouteTableId: !Ref PublicRouteTable
+
+  AuroraDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub ${PJPrefix}-AuroraDBSubnetGroup
+      DBSubnetGroupDescription: Aurora Subnet Group
+      SubnetIds:
+        - !Ref PublicSubnet1a
+        - !Ref PublicSubnet1c
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraDBSubnetGroup
+
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-mysql
+      EngineVersion: 5.7.mysql_aurora.2.11.1
+      MasterUsername: admin
+      MasterUserPassword: 'SomePasswordHere'
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref AuroraDBSecurityGroup
+      PreferredMaintenanceWindow: !Ref PreferredMaintenanceWindow
+      AvailabilityZones:
+        - !Select [ 0, !GetAZs ]
+        - !Select [ 1, !GetAZs ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraCluster
+    DeletionPolicy: Snapshot
+
+  AuroraDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow all inbound traffic
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: "-1"
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraDBSecurityGroup
+
+  AuroraInstance1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: !Ref WriterAndReaderDBInstanceClass
+      DBClusterIdentifier: !Ref AuroraCluster
+      Engine: aurora-mysql
+      PubliclyAccessible: true
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraInstance1
+
+  AuroraInstance2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: !Ref WriterAndReaderDBInstanceClass
+      DBClusterIdentifier: !Ref AuroraCluster
+      Engine: aurora-mysql
+      PubliclyAccessible: true
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraInstance2
+
+Outputs:
+  WriterEndpoint:
+    Description: Writer endpoint for the Aurora cluster
+    Value: !GetAtt AuroraCluster.Endpoint.Address
+
+  ReaderEndpoint:
+    Description: Reader endpoint for the Aurora cluster
+    Value: !GetAtt AuroraCluster.ReadEndpoint.Address
