@@ -140,16 +140,41 @@ Resources:
         - Key: Name
           Value: !Sub ${PJPrefix}-AuroraCluster
     DeletionPolicy: Snapshot
-
   AuroraDBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow all inbound traffic
+      GroupDescription: Allow specific IPs to access the Aurora RDS instance
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        - IpProtocol: "-1"
-          FromPort: -1
-          ToPort: -1
+        # IPアドレス 130.62.15.221 からのアクセスを許可する
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 130.62.15.221/32
+        # IPアドレス 115.30.152.146 からのアクセスを許可する
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 115.30.152.146/32
+        # IPアドレス 219.100.27.40 からのアクセスを許可する
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 219.100.27.40/32
+        # IPアドレス 58.5.38.166 からのアクセスを許可する
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 58.5.38.166/32
+        # IPアドレス 110.67.136.144 からのアクセスを許可する
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 110.67.136.144/32
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: 0
+          ToPort: 65535
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
@@ -180,6 +205,21 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${PJPrefix}-AuroraInstance2
+
+  # クイックサイト専用のリーダーインスタンス
+  CustomEPMemberDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: !Ref WriterAndReaderDBInstanceClass
+      DBClusterIdentifier: !Ref AuroraCluster
+      Engine: aurora-mysql
+      PubliclyAccessible: true
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      # 任意の利用可能なゾーンを指定するか、利用可能なゾーンから選択する
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      Tags:
+        - Key: Name
+          Value: !Sub ${PJPrefix}-AuroraReaderInstance
 
 Outputs:
   WriterEndpoint:
