@@ -65,6 +65,7 @@ Resources:
       ManagedPolicyArns:
         ## To use the Session Manager
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      # インラインポリシーをアタッチしている
       Policies:
         - PolicyName: AmazonS3CfGetObjectPolicy
           PolicyDocument:
@@ -89,6 +90,7 @@ Resources:
         - !Ref IAMRole
 
   ## EC2(VPC): Security Group
+  # VPCでセキュリティグループを作成している
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -119,7 +121,7 @@ Resources:
     Properties:
       ImageId: !Ref EC2ImageId
       InstanceType: t2.micro
-      IamInstanceProfile: !Ref IAMInstanceProfile
+      : !Ref IAMInstanceProfile
       SubnetId:
         Fn::ImportValue: !Sub ${SystemName}-${Environment}-vpc-SubnetPublicC
       SecurityGroupIds:
@@ -152,6 +154,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${SystemName}-${Environment}-${ResourceName}
+      # 作成時にボリュームにタグを割り当てるかどうかを示します。
       PropagateTagsToVolumeOnCreation: true
 
   ## EC2(VPC): EIP
