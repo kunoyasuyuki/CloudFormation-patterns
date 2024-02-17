@@ -107,6 +107,7 @@ Resources:
       Description: !Sub ${SystemName}-${Environment}-rds-cluster-pg
       Family: !FindInMap [ SystemNameMap, !Ref SystemName, ParameterGroupFamily ]
       Parameters:
+        # SSLを有効化してHTTP化させている。
         require_secure_transport: "ON" ## SSL required
 
   ## RDS: DB Parameter Group
