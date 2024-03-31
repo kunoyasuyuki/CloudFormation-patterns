@@ -10,8 +10,8 @@ Mappings:
   EnvironmentMap:
     prod:
       DBInstanceClass: db.t4g.medium
-      CreateDBInstanceC: false
-      CreateDBInstanceD: false
+      CreateDBInstanceC: false # 追加のDBインスタンスCを作成しない設定
+      CreateDBInstanceD: false # 追加のDBインスタンスDを作成しない設定
       EnhancedMonitoring: false
       BackupRetentionPeriod: 3
     stg:
@@ -107,7 +107,7 @@ Resources:
       Description: !Sub ${SystemName}-${Environment}-rds-cluster-pg
       Family: !FindInMap [ SystemNameMap, !Ref SystemName, ParameterGroupFamily ]
       Parameters:
-        # SSLを有効化してHTTP化させている。
+        # SSLを有効化してHTTP化させている(Cluster Parameter Groupでは一つを必ずONにする)。
         require_secure_transport: "ON" ## SSL required
 
   ## RDS: DB Parameter Group
