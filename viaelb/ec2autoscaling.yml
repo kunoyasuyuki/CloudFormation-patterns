@@ -145,14 +145,16 @@ Resources:
             LaunchTemplateId: !Ref EC2LaunchTemplate
             Version: !GetAtt EC2LaunchTemplate.LatestVersionNumber
           Overrides:
-            ## Since the Memory is the same below, WeightedCapacity is not specified.
+            ## Since the Memory is the same below, WeightedCapacity is not specified(t2.microとt3a.microのメモリ容量が同じなので指定しない).
             - InstanceType: t2.micro
             - InstanceType: t3a.micro
+        # Auto Scalingグループ内でオンデマンドインスタンスとスポットインスタンスをどのように分配するかを指定
         InstancesDistribution:
           OnDemandBaseCapacity: 0
           OnDemandPercentageAboveBaseCapacity: 0
           SpotAllocationStrategy: price-capacity-optimized
           # SpotInstancePools: 4 ## Valid only when the Spot allocation strategy is lowest-price.
+      # スポットインスタンスが中断される可能性が高くなった場合に、新しいスポットインスタンスを事前に起動し、既存のインスタンスを置き換えることで、アプリケーションの可用性を維持する機能
       CapacityRebalance: true
       VPCZoneIdentifier:
         Fn::If:
@@ -166,6 +168,7 @@ Resources:
       TargetGroupARNs:
         - Fn::ImportValue: !Sub ${SystemName}-${Environment}-${ResourceName}-ec2-ELBTargetGroup
       HealthCheckType: ELB
+      # インスタンスが起動した後にヘルスチェックを開始するまでの猶予期間
       HealthCheckGracePeriod: 300
       DesiredCapacity: !FindInMap [ EnvironmentMap, !Ref Environment, AutoScalingDesiredCapacity ]
       MinSize: !FindInMap [ EnvironmentMap, !Ref Environment, AutoScalingMinSize ]
