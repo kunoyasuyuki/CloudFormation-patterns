@@ -123,6 +123,7 @@ Resources:
         #   Fn::Base64: !Sub |
         #     #!/bin/bash
 
+
   ## Auto Scaling: Auto Scaling Group
   EC2AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -136,6 +137,7 @@ Resources:
     ## >> IgnoreUnmodifiedGroupSizeProperties
     UpdatePolicy:
       AutoScalingScheduledAction:
+        # スケジュールされたアクションがある場合の動作を定義します。
         IgnoreUnmodifiedGroupSizeProperties: true
     Properties:
       AutoScalingGroupName: !Sub ${SystemName}-${Environment}-${ResourceName}-ec2autoscaling-asg
@@ -174,6 +176,7 @@ Resources:
       MinSize: !FindInMap [ EnvironmentMap, !Ref Environment, AutoScalingMinSize ]
       MaxSize: !FindInMap [ EnvironmentMap, !Ref Environment, AutoScalingMaxSize ]
 
+  # Scheduled actions によって、Auto Scaling グループのサイズをスケールアウトまたはスケールインすることができます。
   ## Auto Scaling: Scheduled Action (Scale Out)
   ScheduledActionScaleOut:
     Condition: isProd
