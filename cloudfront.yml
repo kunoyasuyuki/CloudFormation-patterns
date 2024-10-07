@@ -1,5 +1,5 @@
 ---
-### [Change Acm Certificate Arn] arn:aws:acm:us-east-1:123416260357:certificate/a509dc46-0276-45c5-874f-628fcda3ea6b
+### [Change Acm Certificate Arn] arn:aws:acm:us-east-1:651706768788:certificate/c1a27561-738f-418e-be87-15ec1445943d
 ### [Change System Name] kunotest
 ## The following CFn stack must be created first in order to be referenced by the ImportValue function.
 ## 1. ${SystemName}-${Environment}-route53
@@ -11,15 +11,15 @@ Mappings:
   EnvironmentMap:
     prod:
       ### [Change Acm Certificate Arn] CloudFront certificate needs to be created in the us-east-1 region.
-      AcmCertificateArn: arn:aws:acm:us-east-1:123416260357:certificate/a509dc46-0276-45c5-874f-628fcda3ea6b
+      AcmCertificateArn: arn:aws:acm:us-east-1:651706768788:certificate/c1a27561-738f-418e-be87-15ec1445943d
       ## CloudFront WebACL needs to be created in the us-east-1 region.
-      # WebACLArn: arn:aws:wafv2:us-east-1:123416260357:global/webacl/kunotest-prod-webacl/a509dc46-0276-45c5-874f-628fcda3ea6b
+      # WebACLArn: arn:aws:wafv2:us-east-1:651706768788:global/webacl/kunotest-prod-webacl/c1a27561-738f-418e-be87-15ec1445943d
     stg:
-      AcmCertificateArn: arn:aws:acm:us-east-1:123416260357:certificate/a509dc46-0276-45c5-874f-628fcda3ea6b
-      # WebACLArn: arn:aws:wafv2:us-east-1:123416260357:global/webacl/kunotest-stg-webacl/a509dc46-0276-45c5-874f-628fcda3ea6b
+      AcmCertificateArn: arn:aws:acm:us-east-1:651706768788:certificate/c1a27561-738f-418e-be87-15ec1445943d
+      # WebACLArn: arn:aws:wafv2:us-east-1:651706768788:global/webacl/kunotest-stg-webacl/c1a27561-738f-418e-be87-15ec1445943d
     dev:
-      AcmCertificateArn: arn:aws:acm:us-east-1:123416260357:certificate/a509dc46-0276-45c5-874f-628fcda3ea6b
-      # WebACLArn: arn:aws:wafv2:us-east-1:123416260357:global/webacl/kunotest-dev-webacl/a509dc46-0276-45c5-874f-628fcda3ea6b
+      AcmCertificateArn: arn:aws:acm:us-east-1:651706768788:certificate/c1a27561-738f-418e-be87-15ec1445943d
+      # WebACLArn: arn:aws:wafv2:us-east-1:651706768788:global/webacl/kunotest-dev-webacl/c1a27561-738f-418e-be87-15ec1445943d
 
 Parameters:
   SystemName:
@@ -37,7 +37,7 @@ Parameters:
   SubDomain:
     Description: Sub Domain
     Type: String
-    Default: cdn
+    Default: cdn2
     AllowedPattern: ^[^.]*$
 
 Metadata:
@@ -192,6 +192,7 @@ Resources:
               - HeaderName: x-via-cloudfront
                 HeaderValue: !Sub "{{resolve:secretsmanager:${SecretForCloudFront}:SecretString:x-via-cloudfront}}"
           ## S3: Static Contents
+          # ここから始める
           - DomainName: !GetAtt S3BucketStaticContents.RegionalDomainName
             Id: !Sub S3-${S3BucketStaticContents}
             S3OriginConfig:
@@ -399,4 +400,3 @@ Outputs:
     Value: !GetAtt S3BucketAccessLogs.Arn
     Export:
       Name: !Sub ${AWS::StackName}-S3BucketAccessLogsArn
-
