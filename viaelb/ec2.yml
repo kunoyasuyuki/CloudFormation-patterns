@@ -47,7 +47,7 @@ Parameters:
   UseSubnetProtected:
     Description: Use Protected Subnet
     Type: String
-    Default: true
+    Default: false
     AllowedValues:
       - true
       - false
